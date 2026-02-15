@@ -4,18 +4,18 @@ import axios from 'axios'
 export default function Books () {
     const [books, setBooks] = React.useState([])
 
-    React.useEffect(() => {
-        const fetchBooks = async () => {
-            try {
-                const res = await axios.get('http://localhost:4000/getBooks')
-                setBooks(res.data)
-            } catch (err) {
-                console.log("Error fetching books:", err)
-            }
-        }
+    // React.useEffect(() => {
+    //     const fetchBooks = async () => {
+    //         try {
+    //             const res = await axios.get('http://localhost:4000/getBooks')
+    //             setBooks(res.data)
+    //         } catch (err) {
+    //             console.log("Error fetching books:", err)
+    //         }
+    //     }
 
-        fetchBooks()
-    }, [])
+    //     fetchBooks()
+    // }, [])
 
     return (
         <div className="min-h-screen bg-gray-100 p-8">
