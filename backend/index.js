@@ -2,7 +2,10 @@ const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const router = require('./routes/router')
-require('dotenv').config()
+const login = require('./routes/login')
+const register = require('./routes/register')
+const path = require('path')
+require('dotenv').config({ path: path.join(__dirname, '.env') })
 const pool = require("./db")
 
 const app = express()
@@ -11,13 +14,14 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:false}))
 
 const corsOptions = {
-    origin: '*',
+    origin: 'http://localhost:3000',
     credentials: true,
     optionSuccessStatus: 200
 }
 
 app.use(cors(corsOptions))
-app.use('/', router)
+app.use('/login', login)
+app.use('/register', register)
 
 const port = 4000
 app.listen(port, async () => {
