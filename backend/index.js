@@ -4,6 +4,7 @@ const bodyParser = require('body-parser')
 const router = require('./routes/router')
 const login = require('./routes/login')
 const register = require('./routes/register')
+const getBooks = require('./routes/getbooks')
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '.env') })
 const pool = require("./db")
@@ -22,6 +23,7 @@ const corsOptions = {
 app.use(cors(corsOptions))
 app.use('/login', login)
 app.use('/register', register)
+app.use('/getBooks', getBooks)
 
 const port = 4000
 app.listen(port, async () => {
