@@ -18,7 +18,10 @@ login.post('/', async (req, res) => {
             foundUser = result.rows[0]
             const match = await bcrypt.compare(pass, foundUser.password)
             if (match){
-                res.status(200).json({ message: "Successfully Signed Up"})
+                res.status(200).json({ 
+                    message: "Successfully Logged In",
+                    userID: foundUser.user_id
+                })
             }
             else {
                 res.status(401).json({ message: "Invalid Credentials" })

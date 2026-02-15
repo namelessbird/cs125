@@ -2,7 +2,7 @@ import React from "react";
 import "./styles.css"
 import axios from 'axios'
 
-export default function Login(){
+export default function Login({setUser}){
     const [user, setUser] = React.useState("")
     const [pass, setPass] = React.useState("")
     const [errorMessage, setErrorMessage] = React.useState("")
@@ -21,6 +21,7 @@ export default function Login(){
                 data,
                 { withCredentials: true }
             )
+            setUser(response.data.userID)
 
             window.location.replace("/dashboard")
         } catch (error){

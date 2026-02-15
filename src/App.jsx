@@ -1,4 +1,5 @@
 import './App.css';
+import React from 'react'
 import Footer from './Footer'
 import Header from './Header';
 import Navbar from './Navbar'
@@ -9,20 +10,22 @@ import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 
 const genres = ['Fantasy', 'Mystery', 'Romance', 'Science-fiction']
 
-const Main = () => (
+const Main = ({setUser}) => (
   <Routes>
     <Route path='/' element={<Navigate to='/login' replace/>}/>
-    <Route exact path='/login' element={<Login/>}></Route>
+    <Route exact path='/login' element={<Login setUser={setUser}/>}></Route>
     <Route exact path='/register' element={<Register/>}></Route>
     <Route exact path='/dashboard' element={<><Header/><Navbar genres={genres}/><Books/><Footer/></>}></Route>
   </Routes>
 )
 
 function App() {
+  const [user, setUser] = React.useState(null)
+
   return (
     <BrowserRouter>
       <div className="flex flex-col gap-10 justify-center align-center">
-        <Main/>
+        <Main setUser={setUser}/>
       </div>
     </BrowserRouter>
   );
