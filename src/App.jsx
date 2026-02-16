@@ -11,23 +11,23 @@ import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 
 const genres = ['Fantasy', 'Mystery', 'Romance', 'Science-fiction']
 
-const Main = ({setUser}) => (
+const Main = ({setU, user}) => (
   <Routes>
     <Route path='/' element={<Navigate to='/login' replace/>}/>
-    <Route exact path='/login' element={<Login setUser={setUser}/>}></Route>
+    <Route exact path='/login' element={<Login setU={setU}/>}></Route>
     <Route exact path='/register' element={<Register/>}></Route>
     <Route exact path='/dashboard' element={<><Header/><Navbar genres={genres}/><Books/><Footer/></>}></Route>
-    <Route exact path='/survey' element={<Survey/>}></Route>
+    <Route exact path='/survey' element={<Survey userId={user}/>}></Route>
   </Routes>
 )
 
 function App() {
-  const [user, setUser] = React.useState(null)
+  const [user, setU] = React.useState(0)
 
   return (
     <BrowserRouter>
       <div className="flex flex-col gap-10 justify-center align-center">
-        <Main setUser={setUser}/>
+        <Main setU={setU} user = {user}/>
       </div>
     </BrowserRouter>
   );

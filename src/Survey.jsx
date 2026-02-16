@@ -1,11 +1,12 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
-export default function Survey() {
-
+export default function Survey({userId}) {
+    const [errorMessage, setErrorMessage] = React.useState("")
     const [surveyData, setSurveyData] = useState({
         length: "",
         preference: "",
-        publication: ""
+        publication: "",
+        userId: userId
     });
 
     const bookLength = [
@@ -32,13 +33,16 @@ export default function Survey() {
     //     bookLength, bookPreference, publicationDate
     // ];
     
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        console.log("hehe")
         try{
             const response = await axios.post(
-                `http://localhost:4000/user-preference`,
+                `http://localhost:4000/userPreference`,
                 surveyData,
                 { withCredentials: true }
             )
+            console.log("Test submitting")
         } catch (error){
             if(error.response){
                 setErrorMessage(error.response.data.message)

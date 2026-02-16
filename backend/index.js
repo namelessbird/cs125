@@ -5,6 +5,7 @@ const router = require('./routes/router')
 const login = require('./routes/login')
 const register = require('./routes/register')
 const getBooks = require('./routes/getbooks')
+const userPref = require('./routes/userpref')
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '.env') })
 const pool = require("./db")
@@ -24,6 +25,7 @@ app.use(cors(corsOptions))
 app.use('/login', login)
 app.use('/register', register)
 app.use('/getBooks', getBooks)
+app.use('/userPreference', userPref)
 
 const port = 4000
 app.listen(port, async () => {
