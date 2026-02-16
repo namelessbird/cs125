@@ -1,11 +1,13 @@
 import React from "react";
 import "./styles.css"
 import axios from 'axios'
+import {useNavigate} from "react-router-dom"
 
 export default function Login({setU}){
     const [user, setUser] = React.useState("")
     const [pass, setPass] = React.useState("")
     const [errorMessage, setErrorMessage] = React.useState("")
+    const navigate = useNavigate()
     //const apiUrl = import.meta.env.VITE_API_URL
 
      const handleSubmit = async(e) => {
@@ -22,8 +24,9 @@ export default function Login({setU}){
                 { withCredentials: true }
             )
             setU(response.data.userID)
+            console.log(response.data.userID)
+            navigate("/dashboard")
 
-            window.location.replace("/dashboard")
         } catch (error){
             if(error.response){
                 setErrorMessage(error.response.data.message)
