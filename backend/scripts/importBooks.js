@@ -4,7 +4,7 @@ const csv = require("csv-parser");
 const pool = require("../db");
 
 const filePath = path.join(__dirname, "../data/books.csv");
-const indexesFile = path.join(__dirname, "../scripts/index.sql");
+const indexesFile = path.join(__dirname, "index.sql");
 function toInt(value) {
   const n = parseInt(value, 10);
   return Number.isNaN(n) ? null : n;
