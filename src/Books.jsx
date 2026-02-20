@@ -1,21 +1,27 @@
 import React from "react"
 import axios from 'axios'
 
-export default function Books () {
+export default function Books ( {searchQuery} ) {
     const [books, setBooks] = React.useState([])
 
-    // React.useEffect(() => {
-    //     const fetchBooks = async () => {
-    //         try {
-    //             const res = await axios.get('http://localhost:4000/getBooks')
-    //             setBooks(res.data)
-    //         } catch (err) {
-    //             console.log("Error fetching books:", err)
-    //         }
-    //     }
+    React.useEffect(() => {
+        const fetchBooks = async () => {
+            try {
+                let url = "http://localhost:4000/getBooks";
 
-    //     fetchBooks()
-    // }, [])
+                if (searchQuery) {
+                    url += `?search=${searchQuery}`;
+                }
+                console.log("url search: ", url);
+                const res = await axios.get(url)
+                setBooks(res.data)
+            } catch (err) {
+                console.log("Error fetching books:", err)
+            }
+        }
+
+        fetchBooks()
+    }, [searchQuery])
 
     return (
         <div className="min-h-screen bg-gray-100 p-8">
@@ -26,7 +32,7 @@ export default function Books () {
                     <div key={book.book_id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col">
                         {/* Book Cover */}
                         <div className="h-64 bg-gray-200">
-                            {book.cover ? (
+                            {/* {book.cover ? (
                                 <img 
                                     src={book.cover} 
                                     alt={book.title} 
@@ -34,7 +40,7 @@ export default function Books () {
                                 />
                             ) : (
                                 <div className="flex items-center justify-center h-full text-gray-400">No Cover</div>
-                            )}
+                            )} */}
                         </div>
 
                         {/* Book Info */}

@@ -3,8 +3,8 @@ const userPref = express.Router()
 const axios = require('axios')
 const pool = require('../db')
 
-userPref.post('/', async(req, res) => {
-    console.log("Route hit")
+userPref.post('/', async (req, res) => {
+    console.log("User pref route hit")
     let client
     try {
         const { length, preference, publication, userId } = req.body
