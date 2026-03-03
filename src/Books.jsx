@@ -1,12 +1,13 @@
 import React from "react"
 import axios from 'axios'
 
-export default function Books ( {searchQuery} ) {
+export default function Books ( {userId, searchQuery} ) {
     const [books, setBooks] = React.useState([])
 
     React.useEffect(() => {
         const fetchBooks = async () => {
             try {
+                console.log("calling books api and fetching books")
                 let url = "http://localhost:4000/getBooks";
 
                 if (searchQuery) {
@@ -22,6 +23,18 @@ export default function Books ( {searchQuery} ) {
 
         fetchBooks()
     }, [searchQuery])
+
+    const handleClick = async (bookId) => {
+        const data = {bookId: bookId, userId: userId}
+        try {
+            const res = await axios.post(
+                `http://localhost:4000/userPreference`,
+                data
+            )
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-100 p-8">
@@ -44,7 +57,7 @@ export default function Books ( {searchQuery} ) {
                         </div>
 
                         {/* Book Info */}
-                        <div className="p-4 flex-grow">
+                        <div className="p-4 grow">
                             <h2 className="font-bold text-lg text-gray-900 line-clamp-1">{book.title}</h2>
                             <p className="text-sm text-blue-600 mb-2">{book.authors}</p>
                             
@@ -60,9 +73,12 @@ export default function Books ( {searchQuery} ) {
                                 dangerouslySetInnerHTML={{ __html: book.description }}
                             />
                         </div>
-                        
+                        {/* To Read and Like Button */}
                         <div className="p-4 border-t border-gray-100">
-                            <button className="w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700">
+                            <button 
+                                className="w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700"
+                                onClick={() => handleClick(book.book_id)}
+                            >
                                 To Read
                             </button>
                         </div>

@@ -18,7 +18,7 @@ const Main = ({setU, user, searchQuery, setSearchQuery}) => (
     <Route path='/' element={<Navigate to='/login' replace/>}/>
     <Route exact path='/login' element={<Login setU={setU}/>}></Route>
     <Route exact path='/register' element={<Register/>}></Route>
-    <Route exact path='/dashboard' element={<><Header/><Navbar genres={genres}/><Search setSearchQuery={setSearchQuery}/><Books searchQuery={searchQuery}/><Footer/></>}></Route>
+    <Route exact path='/dashboard' element={<><Header/><Navbar genres={genres}/><Search setSearchQuery={setSearchQuery}/><Books userId={user} searchQuery={searchQuery}/><Footer/></>}></Route>
     <Route exact path='/survey' element={<Survey userId={user}/>}></Route>
   </Routes>
 )
