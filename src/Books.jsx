@@ -11,7 +11,7 @@ export default function Books ( {userId, searchQuery} ) {
                 let url = "http://localhost:4000/getBooks";
 
                 if (searchQuery) {
-                    url += `?search=${searchQuery}`;
+                    url += `?search=${searchQuery}&userId=${userId}`;
                 }
                 console.log("url search: ", url);
                 const res = await axios.get(url)
