@@ -8,6 +8,7 @@ import Login from './Login'
 import Register from './Register'
 import Survey from './Survey'
 import Search from './Search'
+import SearchResults from './SearchResults';
 import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import {useState} from "react";
 
@@ -18,7 +19,25 @@ const Main = ({setU, user, searchQuery, setSearchQuery}) => (
     <Route path='/' element={<Navigate to='/login' replace/>}/>
     <Route exact path='/login' element={<Login setU={setU}/>}></Route>
     <Route exact path='/register' element={<Register/>}></Route>
-    <Route exact path='/dashboard' element={<><Header/><Navbar genres={genres}/><Search setSearchQuery={setSearchQuery}/><Books userId={user} searchQuery={searchQuery}/><Footer/></>}></Route>
+    <Route 
+      exact 
+      path='/dashboard' 
+      element={
+        <>
+          <Header />
+          <Navbar genres={genres} />
+          <Search setSearchQuery={setSearchQuery} />
+          
+          {searchQuery ? (
+            <SearchResults userId={user} searchQuery={searchQuery} />
+          ) : (
+            <Books userId={user} />
+          )}
+          
+          <Footer />
+        </>
+      } 
+    />
     <Route exact path='/survey' element={<Survey userId={user}/>}></Route>
   </Routes>
 )

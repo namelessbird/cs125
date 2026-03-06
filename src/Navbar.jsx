@@ -11,7 +11,7 @@ export default function Navbar ( {genres} ) {
                     navigate('/survey')
                 }
             >
-                Click me
+                Take Survey
                 </button>
         </nav>
     )
