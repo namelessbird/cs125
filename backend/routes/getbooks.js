@@ -53,11 +53,20 @@ getBooks.get('/', async (req, res) => {
             const genRes = await client.query('SELECT * FROM books.book WHERE isbn13 IS NOT NULL ORDER BY avg_rating DESC LIMIT 10');
             const toReadRes = await client.query(`
                 SELECT b.* FROM books.book b
-                WHERE b.authors IN (
-                    SELECT authors FROM books.book 
-                    WHERE book_id IN (SELECT book_id FROM books.user_preferences WHERE user_id = $1)
-                ) AND b.book_id NOT IN (SELECT book_id FROM books.user_preferences WHERE user_id = $1)
-                LIMIT 5`, [userId]);
+                WHERE EXISTS (
+                    -- Check if the author of the current book (b) 
+                    -- matches any author from the user's preference list
+                    SELECT 1 FROM books.book pref_books
+                    WHERE pref_books.book_id IN (
+                        SELECT UNNEST(book_ids) FROM books.user_preferences WHERE user_id = $1
+                    )
+                    AND b.authors ILIKE '%' || pref_books.authors || '%'
+                )
+                -- Exclude books already in their list
+                AND b.book_id NOT IN (
+                    SELECT UNNEST(book_ids) FROM books.user_preferences WHERE user_id = $1
+                )
+                LIMIT 5`, [userId])
             const recentSearchRes = await client.query(`
                 WITH random_search AS (
                     SELECT search_str FROM books.user_searches WHERE user_id = $1 ORDER BY RANDOM() LIMIT 1
