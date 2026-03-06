@@ -3,61 +3,90 @@ const getBooks = express.Router()
 const pool = require('../db')
 const axios = require('axios')
 
-getBooks.get('/', async(req, res) =>{
-    let client
+getBooks.get('/', async (req, res) => {
+    let client;
     try {
-        client = await pool.connect()
+        client = await pool.connect();
+        const { search, userId } = req.query;
 
-        const search = req.query.search;
-        const userId = req.query.userId
-        let result;
-        let query;
-        if (search) {
-            await client.query(
-                'INSERT INTO books.user_searches (user_id, search_str) VALUES ($1, $2)',
-                [userId, search]
-            );
+        const getEnrichedBooks = async (bookList) => {
+            if (!bookList || bookList.length === 0) return [];
+            return await Promise.all(bookList.map(async (book) => {
+                try {
+                    const googleRes = await axios.get(
+                        `https://www.googleapis.com/books/v1/volumes?q=isbn:${book.isbn13}`
+                    );
+                    const volumeInfo = googleRes.data.items?.[0]?.volumeInfo;
+                    return {
+                        ...book,
+                        cover: volumeInfo?.imageLinks?.thumbnail || null,
+                        description: volumeInfo?.description || book.description || "No description available."
+                    };
+                } catch (apiErr) {
+                    return { ...book, cover: null };
+                }
+            }));
+        };
+        
+        if (search && userId) {
+            console.log(`Searching for: ${search} for User: ${userId}`)
+            await client.query('INSERT INTO books.user_searches (user_id, search_str) VALUES ($1, $2)', [userId, search]);
+            await client.query(`DELETE FROM books.user_searches WHERE search_id NOT IN (
+                SELECT search_id FROM books.user_searches WHERE user_id = $1 ORDER BY searched_at DESC LIMIT 5
+            ) AND user_id = $1`, [userId]);
 
-            await client.query(`
-                DELETE FROM books.user_searches 
-                WHERE search_id NOT IN (
-                    SELECT search_id FROM books.user_searches 
-                    WHERE user_id = $1 
-                    ORDER BY searched_at DESC 
-                    LIMIT 5
-                ) AND user_id = $1`, 
-                [userId]
+            const result = await client.query(
+                'SELECT * FROM books.book WHERE isbn13 IS NOT NULL AND title ILIKE $1 LIMIT 10', 
+                [`%${search}%`]
             );
-            query = 'SELECT * FROM books.book WHERE book.isbn13 IS NOT NULL AND book.title ILIKE $1 LIMIT 10';
-            result = await client.query(query, [`%${search}%`])
+            
+            console.log(`Found ${result.rows.length} books for search term "${search}"`);
+            let searchResults = result.rows;
+
+            // UNCOMMENT TO ENABLE API COVERS
+            // searchResults = await getEnrichedBooks(searchResults);
+
+            return res.json({ searchResults });
+
         } else {
-            query = 'select * from books.book where book.isbn13 is not null limit 10'
-            result = await client.query(query)
+            // A. Fetch Raw Database Rows
+            const genRes = await client.query('SELECT * FROM books.book WHERE isbn13 IS NOT NULL ORDER BY avg_rating DESC LIMIT 10');
+            const toReadRes = await client.query(`
+                SELECT b.* FROM books.book b
+                WHERE b.authors IN (
+                    SELECT authors FROM books.book 
+                    WHERE book_id IN (SELECT book_id FROM books.user_preferences WHERE user_id = $1)
+                ) AND b.book_id NOT IN (SELECT book_id FROM books.user_preferences WHERE user_id = $1)
+                LIMIT 5`, [userId]);
+            const recentSearchRes = await client.query(`
+                WITH random_search AS (
+                    SELECT search_str FROM books.user_searches WHERE user_id = $1 ORDER BY RANDOM() LIMIT 1
+                )
+                SELECT b.* FROM books.book b, random_search rs
+                WHERE b.title ILIKE '%' || rs.search_str || '%' LIMIT 5`, [userId]);
+
+            // Assign initial raw values
+            let general = genRes.rows;
+            let basedOnToRead = toReadRes.rows;
+            let basedOnSearch = recentSearchRes.rows;
+
+            // UNCOMMENT BELOW TO ENRICH WITH GOOGLE BOOKS API
+            /*
+            [general, basedOnToRead, basedOnSearch] = await Promise.all([
+                getEnrichedBooks(general),
+                getEnrichedBooks(basedOnToRead),
+                getEnrichedBooks(basedOnSearch)
+            ]);
+            */
+
+            res.json({ general, basedOnToRead, basedOnSearch });
         }
-        const books = result.rows
-        // const additionalInfo = await Promise.all(books.map(async (book) => {
-        //     try{
-        //         const googleRes = await axios.get(
-        //             `https://www.googleapis.com/books/v1/volumes?q=isbn:${book.isbn13}`
-        //         );
-
-        //         const volumeInfo = googleRes.data.items?.[0]?.volumeInfo;
-
-        //         return {
-        //             ...book,
-        //             cover: volumeInfo?.imageLinks?.thumbnail || null,
-        //             description: volumeInfo?.description || "No description available."
-        //         }
-        //     } catch(apiErr){
-        //         return { ...book, cover: null, description: "Error fetching description" }
-        //     }
-        // }))
-        res.json(books)
-    } catch(err) {
-        console.error(err)
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server Error" });
     } finally {
-        client.release()
+        if (client) client.release();
     }
-})
+});
 
 module.exports = getBooks

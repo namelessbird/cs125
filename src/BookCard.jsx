@@ -1,6 +1,6 @@
 import React from "react";
 
-export const BookCard = ({ book, onAction, buttonText }) => (
+export const BookCard = ({ book, onAction }) => (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col">
         <div className="h-64 bg-gray-200">
             {book.cover && (
@@ -24,7 +24,7 @@ export const BookCard = ({ book, onAction, buttonText }) => (
                 className="w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700"
                 onClick={() => onAction(book.book_id)}
             >
-                {buttonText}
+                Add to List
             </button>
         </div>
     </div>

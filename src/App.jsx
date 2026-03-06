@@ -14,36 +14,55 @@ import {useState} from "react";
 
 const genres = ['Fantasy', 'Mystery', 'Romance', 'Science-fiction']
 
-const Main = ({setU, user, searchQuery, setSearchQuery}) => (
-  <Routes>
-    <Route path='/' element={<Navigate to='/login' replace/>}/>
-    <Route exact path='/login' element={<Login setU={setU}/>}></Route>
-    <Route exact path='/register' element={<Register/>}></Route>
-    <Route 
-      exact 
-      path='/dashboard' 
-      element={
-        <>
-          <Header />
-          <Navbar genres={genres} />
-          <Search setSearchQuery={setSearchQuery} />
-          
-          {searchQuery ? (
-            <SearchResults userId={user} searchQuery={searchQuery} />
+const Main = ({setU, user, searchQuery, setSearchQuery}) => {
+  const isAuthenticated = user !== 0;
+
+  return (
+    <Routes>
+      <Route path='/' element={<Navigate to='/login' replace/>}/>
+      <Route exact path='/login' element={<Login setU={setU}/>} />
+      <Route exact path='/register' element={<Register/>} />
+
+      <Route 
+        exact 
+        path='/dashboard' 
+        element={
+          isAuthenticated ? (
+            <>
+              <Header />
+              <Navbar genres={genres} />
+              <Search setSearchQuery={setSearchQuery} />
+              {searchQuery ? (
+                <SearchResults userId={user} searchQuery={searchQuery} />
+              ) : (
+                <Books userId={user} />
+              )}
+              <Footer />
+            </>
           ) : (
-            <Books userId={user} />
-          )}
-          
-          <Footer />
-        </>
-      } 
-    />
-    <Route exact path='/survey' element={<Survey userId={user}/>}></Route>
-  </Routes>
-)
+            <Navigate to='/login' replace />
+          )
+        } 
+      />
+
+      <Route 
+        exact 
+        path='/survey' 
+        element={
+          isAuthenticated ? <Survey userId={user}/> : <Navigate to='/login' replace />
+        } 
+      />
+
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  );
+}
 
 function App() {
-  const [user, setU] = React.useState(0)
+  const [user, setU] = React.useState(() => {
+    const saved = localStorage.getItem("userID");
+    return saved ? parseInt(saved) : 0;
+  });
   const [searchQuery, setSearchQuery] = useState("")
   return (
     <BrowserRouter>

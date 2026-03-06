@@ -7,12 +7,13 @@ export default function SearchResults({ userId, searchQuery }) {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
+        console.log("Search Query: ", searchQuery)
         const performSearch = async () => {
             if (!searchQuery) return;
             setLoading(true);
             try {
                 const res = await axios.get(`http://localhost:4000/getBooks?search=${searchQuery}&userId=${userId}`);
-                setResults(res.data);
+                setResults(res.data.searchResults || []);
             } catch (err) {
                 console.log("Search error:", err);
             } finally {
@@ -22,7 +23,6 @@ export default function SearchResults({ userId, searchQuery }) {
         performSearch();
     }, [searchQuery, userId]);
 
-    // Added the actual function to talk to your preference table
     const handleSave = async (bookId) => {
         try {
             await axios.post(`http://localhost:4000/userPreference`, { 
@@ -48,8 +48,7 @@ export default function SearchResults({ userId, searchQuery }) {
                         <BookCard 
                             key={book.book_id} 
                             book={book} 
-                            onAction={handleSave} 
-                            buttonText="Add to List"
+                            onAction={handleSave}
                         />
                     ))}
                 </div>
