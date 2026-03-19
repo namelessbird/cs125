@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from 'axios'
+import { useNavigate } from "react-router-dom";
 
 export default function Survey({userId}) {
     const [errorMessage, setErrorMessage] = React.useState("")
@@ -30,9 +31,7 @@ export default function Survey({userId}) {
         "Recent (2015+)"
     ];
 
-    // const bigArray = [
-    //     bookLength, bookPreference, publicationDate
-    // ];
+    const navigate = useNavigate();
     
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -44,6 +43,9 @@ export default function Survey({userId}) {
                 { withCredentials: true }
             )
             console.log("Test submitting")
+
+            navigate("/dashboard");
+
         } catch (error){
             if(error.response){
                 setErrorMessage(error.response.data.message)
