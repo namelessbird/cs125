@@ -97,7 +97,7 @@ export default function Survey({userId}) {
                 </div>
                 
                 <h2 className="text-2xl font-bold text-center mb-6 mt-6">
-                    What is your book preference?
+                    Choose Your Preferred Time Period
                 </h2>
 
                 <div className="flex flex-wrap gap-3 justify-center">
@@ -125,7 +125,7 @@ export default function Survey({userId}) {
                 </div>
 
                 <h2 className="text-2xl font-bold text-center mb-6 mt-6">
-                    How old are you?
+                    Choose Your Preferred Book Types
                 </h2>
 
                 <div className="flex flex-wrap gap-3 justify-center">

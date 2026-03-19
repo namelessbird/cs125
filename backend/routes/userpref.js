@@ -7,8 +7,10 @@ userPref.post('/', async (req, res) => {
     console.log("User pref route hit")
     let client
     try {
-        const { length, preference, publication, userId, bookId } = req.body
+        const { length, preference, publication, userId, bookId, authors } = req.body
         client = await pool.connect()
+
+        console.log(req.body)
 
         let query 
         let result

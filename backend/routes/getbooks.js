@@ -44,7 +44,7 @@ getBooks.get('/', async (req, res) => {
             let searchResults = result.rows;
 
             // UNCOMMENT TO ENABLE API COVERS
-            // searchResults = await getEnrichedBooks(searchResults);
+            searchResults = await getEnrichedBooks(searchResults);
 
             return res.json({ searchResults });
 
@@ -80,13 +80,13 @@ getBooks.get('/', async (req, res) => {
             let basedOnSearch = recentSearchRes.rows;
 
             // UNCOMMENT BELOW TO ENRICH WITH GOOGLE BOOKS API
-            /*
+            
             [general, basedOnToRead, basedOnSearch] = await Promise.all([
                 getEnrichedBooks(general),
                 getEnrichedBooks(basedOnToRead),
                 getEnrichedBooks(basedOnSearch)
             ]);
-            */
+            
 
             res.json({ general, basedOnToRead, basedOnSearch });
         }
