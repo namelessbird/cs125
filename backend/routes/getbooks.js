@@ -9,23 +9,54 @@ getBooks.get('/', async (req, res) => {
         client = await pool.connect();
         const { search, userId } = req.query;
 
-        const getEnrichedBooks = async (bookList) => {
-            if (!bookList || bookList.length === 0) return [];
-            return await Promise.all(bookList.map(async (book) => {
-                try {
-                    const googleRes = await axios.get(
-                        `https://www.googleapis.com/books/v1/volumes?q=isbn:${book.isbn13}`
-                    );
-                    const volumeInfo = googleRes.data.items?.[0]?.volumeInfo;
-                    return {
-                        ...book,
-                        cover: volumeInfo?.imageLinks?.thumbnail || null,
-                        description: volumeInfo?.description || book.description || "No description available."
-                    };
-                } catch (apiErr) {
-                    return { ...book, cover: null };
+        const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+        const fetchWithRetry = async (url, retries = 3) => {
+            try {
+                return await axios.get(url, { timeout: 3000 });
+            } catch (err) {
+                if (err.response?.status === 429 && retries > 0) {
+                    const delay = (4 - retries) * 1000;
+                    await sleep(delay);
+                    return fetchWithRetry(url, retries - 1);
                 }
-            }));
+                throw err;
+            }
+        };
+
+        const getEnrichedBooks = async (bookList) => {
+            const enrichedResults = [];
+            for (const book of bookList) {
+                let enrichedData = { ...book, cover: null, description: "No description available." };
+
+                try {
+                    // skip if already enriched
+                    if (book.cover && book.description) {
+                        enrichedResults.push(book);
+                        continue;
+                    }
+
+                    await sleep(500);
+
+                    const res = await fetchWithRetry(
+                        `https://www.googleapis.com/books/v1/volumes?q=isbn:${book.isbn13}&key=${process.env.GOOGLE_BOOKS_API_KEY}`
+                    );
+
+                    const info = res.data.items?.[0]?.volumeInfo;
+
+                    if (info) {
+                        enrichedData.cover = info.imageLinks?.thumbnail?.replace("http://", "https://") || null;
+                        enrichedData.description = info.description || enrichedData.description;
+                    }
+
+                } catch (err) {
+                    console.error(`Skipping ${book.isbn13}`);
+                }
+
+                enrichedResults.push(enrichedData);
+            }
+
+            return enrichedResults;
         };
         
         if (search && userId) {
