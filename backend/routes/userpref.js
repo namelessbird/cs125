@@ -6,20 +6,10 @@ const pool = require('../db')
 userPref.post('/', async (req, res) => {
     let client;
     try {
-<<<<<<< HEAD
-        const { length, preference, publication, userId, bookId, authors } = req.body
-        client = await pool.connect()
-
-        console.log(req.body)
-
-        let query 
-        let result
-=======
-        const { length, preference, publication, userId, bookId } = req.body;
+        const { length, preference, publication, userId, bookId, authors } = req.body;
         client = await pool.connect();
 
         let result;
->>>>>>> 84bffbc5bea22af410b6b2ba844c67530f086d6e
         if (bookId) {
             // Logic for appending a book to the array
             const query = `
