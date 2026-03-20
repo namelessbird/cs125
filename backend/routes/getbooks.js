@@ -120,24 +120,26 @@ getBooks.get("/", async (req, res) => {
       const values = [];
       let idx = 1;
 
+      // Updated book length filter using `pages`
       if (finalBookLength === "Under 250 pages") {
-        conditions.push(`num_pages IS NOT NULL AND num_pages < $${idx}`);
+        conditions.push(`pages IS NOT NULL AND pages < $${idx}`);
         values.push(250);
         idx++;
       } else if (finalBookLength === "250-400 pages") {
-        conditions.push(`num_pages IS NOT NULL AND num_pages BETWEEN $${idx} AND $${idx + 1}`);
+        conditions.push(`pages IS NOT NULL AND pages BETWEEN $${idx} AND $${idx + 1}`);
         values.push(250, 400);
         idx += 2;
       } else if (finalBookLength === "400-600 pages") {
-        conditions.push(`num_pages IS NOT NULL AND num_pages BETWEEN $${idx} AND $${idx + 1}`);
+        conditions.push(`pages IS NOT NULL AND pages BETWEEN $${idx} AND $${idx + 1}`);
         values.push(401, 600);
         idx += 2;
       } else if (finalBookLength === "600+ pages") {
-        conditions.push(`num_pages IS NOT NULL AND num_pages > $${idx}`);
+        conditions.push(`pages IS NOT NULL AND pages > $${idx}`);
         values.push(600);
         idx++;
       }
 
+      // Publication date filter
       if (finalPublicationDate === "Classic (pre-1970)") {
         conditions.push(`EXTRACT(YEAR FROM publication_date) < $${idx}`);
         values.push(1970);
@@ -156,6 +158,7 @@ getBooks.get("/", async (req, res) => {
         idx++;
       }
 
+      // Preference filter
       if (finalPreference === "Critically acclaimed books") {
         conditions.push(`avg_rating >= 4.0`);
       } else if (finalPreference === "Bestsellers") {
