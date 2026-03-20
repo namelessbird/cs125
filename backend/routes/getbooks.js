@@ -107,19 +107,78 @@ getBooks.get("/", async (req, res) => {
       return res.json({ searchResults });
     } else {
       // A. Fetch Raw Database Rows
-      const genRes = await client.query(`
-                SELECT *,
-                (
-                    (rating_count::float / (rating_count + 1000)) * avg_rating +
-                    (1000.0 / (rating_count + 1000)) * (
-                    SELECT AVG(avg_rating) FROM books.book WHERE avg_rating IS NOT NULL
-                    )
-                ) AS score
-                FROM books.book
-                WHERE isbn13 IS NOT NULL
-                ORDER BY score DESC
-                LIMIT 10
-                `);
+      const { bookLength, publicationDate } = req.query;
+
+      const conditions = [`isbn13 IS NOT NULL`];
+      const values = [];
+      let idx = 1;
+
+      if (bookLength === "Under 250 pages") {
+        conditions.push(`num_pages IS NOT NULL AND num_pages < $${idx}`);
+        values.push(250);
+        idx++;
+      } else if (bookLength === "250-400 pages") {
+        conditions.push(
+          `num_pages IS NOT NULL AND num_pages BETWEEN $${idx} AND $${idx + 1}`,
+        );
+        values.push(250, 400);
+        idx += 2;
+      } else if (bookLength === "400-600 pages") {
+        conditions.push(
+          `num_pages IS NOT NULL AND num_pages BETWEEN $${idx} AND $${idx + 1}`,
+        );
+        values.push(401, 600);
+        idx += 2;
+      } else if (bookLength === "600+ pages") {
+        conditions.push(`num_pages IS NOT NULL AND num_pages > $${idx}`);
+        values.push(600);
+        idx++;
+      }
+
+      if (publicationDate === "Classic (pre-1970)") {
+        conditions.push(
+          `publication_year IS NOT NULL AND publication_year < $${idx}`,
+        );
+        values.push(1970);
+        idx++;
+      } else if (publicationDate === "1970-2000") {
+        conditions.push(
+          `publication_year IS NOT NULL AND publication_year BETWEEN $${idx} AND $${idx + 1}`,
+        );
+        values.push(1970, 2000);
+        idx += 2;
+      } else if (publicationDate === "2000-2015") {
+        conditions.push(
+          `publication_year IS NOT NULL AND publication_year BETWEEN $${idx} AND $${idx + 1}`,
+        );
+        values.push(2000, 2014);
+        idx += 2;
+      } else if (publicationDate === "Recent (2015+)") {
+        conditions.push(
+          `publication_year IS NOT NULL AND publication_year >= $${idx}`,
+        );
+        values.push(2015);
+        idx++;
+      }
+
+      const genRes = await client.query(
+        `
+        SELECT *,
+        (
+          (rating_count::float / (rating_count + 1000)) * avg_rating +
+          (1000.0 / (rating_count + 1000)) * (
+            SELECT AVG(avg_rating)
+            FROM books.book
+            WHERE avg_rating IS NOT NULL
+          )
+        ) AS score
+        FROM books.book
+        WHERE ${conditions.join(" AND ")}
+        ORDER BY score DESC
+        LIMIT 10
+        `,
+        values,
+      );
       const toReadRes = await client.query(
         `
   SELECT b.*,
